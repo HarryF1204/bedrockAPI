@@ -1,0 +1,4 @@
+{'body': {'message': 'a', 'receiver': '', 'sender': 'Test', 'type': 'chat'}, 'header': {'eventName': 'PlayerMessage', 'messagePurpose': 'event', 'version': 17039360}}
+{'body': {'message': '[Test] a', 'receiver': '', 'sender': 'Test', 'type': 'say'}, 'header': {'eventName': 'PlayerMessage', 'messagePurpose': 'event', 'version': 17039360}}
+{'body': {'message': 'a', 'receiver': 'Test', 'sender': 'Test', 'type': 'tell'}, 'header': {'eventName': 'PlayerMessage', 'messagePurpose': 'event', 'version': 17039360}}
+{'body': {'message': '{"rawtext":[{"text":"test"}]}\n', 'receiver': 'Test', 'sender': 'Test', 'type': 'tell'}, 'header': {'eventName': 'PlayerMessage', 'messagePurpose': 'event', 'version': 17039360}}

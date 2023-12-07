@@ -28,7 +28,7 @@ class BedrockAPI:
             async for msg in self._ws:
                 print(msg)
         except websockets.exceptions.ConnectionClosed as e:
-            print(e)
+            print(':: Client Disconnected', e)
 
     async def _sendPayload(self, header, body):
         data = json.dumps({
@@ -78,7 +78,10 @@ class BedrockAPI:
         self._loop = asyncio.get_event_loop()
         self._loop.run_until_complete(server)
         # run ready event
-        self._loop.run_forever()
+        try:
+            self._loop.run_forever()
+        except KeyboardInterrupt as e:
+            print(':: Server Closed from Keyboard Interrupt')
 
     async def _send_event(self, event):
         if event in self._event_handlers:

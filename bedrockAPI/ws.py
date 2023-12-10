@@ -27,6 +27,7 @@ class BedrockAPI:
             async for msg in self._ws:
                 print(msg)
         except websockets.exceptions.ConnectionClosed as e:
+            await self._serverEvent.trigger_event("disconnect", ConnectContext(self._host, self._port))
             print(':: Client Disconnected', e)
 
     async def _sendPayload(self, header, body):
@@ -76,10 +77,11 @@ class BedrockAPI:
         server = websockets.serve(self._handleWS, self._host, self._port)
         self._loop = asyncio.get_event_loop()
         self._loop.run_until_complete(server)
-        # run ready event
+        await self._serverEvent.trigger_event("ready", ConnectContext(self._host, self._port))
         try:
             self._loop.run_forever()
         except KeyboardInterrupt:
+            await self._serverEvent.trigger_event("close", ConnectContext(self._host, self._port))
             print(':: Server Closed from Keyboard Interrupt')
 
     def server_event(self, func=None):
@@ -88,6 +90,12 @@ class BedrockAPI:
             return event
 
         return decorator(func)
+
+    def remove_server_event(self, func=None):
+        def wrapper(event):
+            self._serverEvent.remove_event_handler(event)
+
+        return wrapper(func)
 
 
 if __name__ == '__main__':

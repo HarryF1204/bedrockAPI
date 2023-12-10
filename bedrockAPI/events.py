@@ -8,6 +8,9 @@ class EventManager:
     def add_event_handler(self, event, handler):
         self._event_handlers[event] = handler
 
+    def remove_event_handler(self, event):
+        self._event_handlers.pop(event)
+
     async def trigger_event(self, event_name, *args, **kwargs):
         if event_name in self._event_handlers:
             await self._event_handlers[event_name](*args, **kwargs)

@@ -13,6 +13,16 @@ class EventManager:
             await self._event_handlers[event_name](*args, **kwargs)
 
 
+class GameEvent(EventManager):
+    def __init__(self):
+        super().__init__()
+
+
+class ServerEvent(EventManager):
+    def __init__(self):
+        super().__init__()
+
+
 class ConnectContext:
     def __init__(self, host, port):
         self.host = host

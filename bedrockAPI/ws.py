@@ -14,14 +14,15 @@ class BedrockAPI:
         self._host = host
         self._port = port
         self._ws: websockets.WebSocketServerProtocol | None = None
-        self._event_manager = EventManager()
+        self._serverEvent = ServerEvent()
+        self._gameEvent = GameEvent()
 
     def __repr__(self):
         return f"Bedrock API running at {self._host}:{self._port}"
 
     async def _handleWS(self, ws: websockets.WebSocketServerProtocol) -> None:
         self._ws = ws
-        await self._event_manager.trigger_event("connect", ConnectContext(self._host, self._port))
+        await self._serverEvent.trigger_event("connect", ConnectContext(self._host, self._port))
         try:
             async for msg in self._ws:
                 print(msg)
@@ -78,24 +79,24 @@ class BedrockAPI:
         # run ready event
         try:
             self._loop.run_forever()
-        except KeyboardInterrupt as e:
+        except KeyboardInterrupt:
             print(':: Server Closed from Keyboard Interrupt')
 
-    def server_event(self, event):
-        def decorator(func):
-            self._event_manager.add_event_handler(event, func)
-            return func
+    def server_event(self, func=None):
+        def decorator(event):
+            self._serverEvent.add_event_handler(event.__name__, event)
+            return event
 
-        return decorator
+        return decorator(func)
 
 
 if __name__ == '__main__':
-    bedrock_api = BedrockAPI()
+    api = BedrockAPI()
 
 
-    @bedrock_api.server_event("connect")
+    @api.server_event
     async def connect(context: ConnectContext) -> None:
         print("Connected on {0}:{1}".format(context.host, context.port))
 
 
-    bedrock_api.start()
+    api.start()

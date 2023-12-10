@@ -4,11 +4,7 @@ import asyncio
 
 from uuid import uuid4
 
-
-class ConnectContext:
-    def __init__(self, host, port):
-        self.host = host
-        self.port = port
+from events import *
 
 
 class BedrockAPI:
@@ -18,14 +14,14 @@ class BedrockAPI:
         self._host = host
         self._port = port
         self._ws: websockets.WebSocketServerProtocol | None = None
-        self._event_handlers = {}
+        self._event_manager = EventManager()
 
     def __repr__(self):
         return f"Bedrock API running at {self._host}:{self._port}"
 
     async def _handleWS(self, ws: websockets.WebSocketServerProtocol) -> None:
         self._ws = ws
-        await self._send_event("connect", ConnectContext(self._host, self._port))
+        await self._event_manager.trigger_event("connect", ConnectContext(self._host, self._port))
         try:
             async for msg in self._ws:
                 print(msg)
@@ -85,13 +81,9 @@ class BedrockAPI:
         except KeyboardInterrupt as e:
             print(':: Server Closed from Keyboard Interrupt')
 
-    async def _send_event(self, event, context=None):
-        if event in self._event_handlers:
-            await self._event_handlers[event](context)
-
     def server_event(self, event):
         def decorator(func):
-            self._event_handlers[event] = func
+            self._event_manager.add_event_handler(event, func)
             return func
 
         return decorator

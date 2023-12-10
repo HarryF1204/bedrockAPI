@@ -6,7 +6,9 @@ from uuid import uuid4
 
 
 class ConnectContext:
-    pass
+    def __init__(self, host, port):
+        self.host = host
+        self.port = port
 
 
 class BedrockAPI:
@@ -23,7 +25,7 @@ class BedrockAPI:
 
     async def _handleWS(self, ws: websockets.WebSocketServerProtocol) -> None:
         self._ws = ws
-        await self._send_event("connect")
+        await self._send_event("connect", ConnectContext(self._host, self._port))
         try:
             async for msg in self._ws:
                 print(msg)
@@ -83,13 +85,13 @@ class BedrockAPI:
         except KeyboardInterrupt as e:
             print(':: Server Closed from Keyboard Interrupt')
 
-    async def _send_event(self, event):
+    async def _send_event(self, event, context=None):
         if event in self._event_handlers:
-            await self._event_handlers[event]({})
+            await self._event_handlers[event](context)
 
-    def server_event(self, event_name):
+    def server_event(self, event):
         def decorator(func):
-            self._event_handlers[event_name] = func
+            self._event_handlers[event] = func
             return func
 
         return decorator
@@ -101,7 +103,7 @@ if __name__ == '__main__':
 
     @bedrock_api.server_event("connect")
     async def connect(context: ConnectContext) -> None:
-        print("Connect")
+        print("Connected on {0}:{1}".format(context.host, context.port))
 
 
     bedrock_api.start()

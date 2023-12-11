@@ -6,6 +6,8 @@ from uuid import uuid4
 
 from events import *
 
+import logging
+
 
 class BedrockAPI:
 
@@ -13,7 +15,7 @@ class BedrockAPI:
         self._loop = None
         self._host = host
         self._port = port
-        self._ws: websockets.WebSocketServerProtocol | None = None
+        self._ws: websockets.WebSocketServerProtocol
         self._serverEvent = ServerEvent()
         self._gameEvent = GameEvent()
 
@@ -22,12 +24,12 @@ class BedrockAPI:
 
     async def _handleWS(self, ws: websockets.WebSocketServerProtocol) -> None:
         self._ws = ws
-        await self._serverEvent.trigger_event("connect", ConnectContext(self._host, self._port))
+        self._dispatchServerEvent("connect")
         try:
             async for msg in self._ws:
                 print(msg)
         except websockets.exceptions.ConnectionClosed as e:
-            await self._serverEvent.trigger_event("disconnect", ConnectContext(self._host, self._port))
+            self._dispatchServerEvent("disconnect")
             print(':: Client Disconnected', e)
 
     async def _sendPayload(self, header, body):
@@ -55,7 +57,7 @@ class BedrockAPI:
         }
         return await self._sendPayload(header, body)
 
-    async def subscribe_event(self, event):
+    async def _subscribeEvent(self, event):
         header = {
             "header": {
                 "version": 1,
@@ -77,12 +79,16 @@ class BedrockAPI:
         server = websockets.serve(self._handleWS, self._host, self._port)
         self._loop = asyncio.get_event_loop()
         self._loop.run_until_complete(server)
-        await self._serverEvent.trigger_event("ready", ConnectContext(self._host, self._port))
+        self._dispatchServerEvent("ready")
         try:
             self._loop.run_forever()
         except KeyboardInterrupt:
-            await self._serverEvent.trigger_event("close", ConnectContext(self._host, self._port))
             print(':: Server Closed from Keyboard Interrupt')
+
+    def _dispatchServerEvent(self, event):
+        assert self._loop
+        connectContext = ConnectContext(self._host, self._port)
+        self._loop.create_task(self._serverEvent.trigger_event(event, connectContext))
 
     def server_event(self, func=None):
         def decorator(event):
@@ -90,6 +96,13 @@ class BedrockAPI:
             return event
 
         return decorator(func)
+
+    def game_event(self, func=None):
+        def wrapper(event):
+            self._gameEvent.add_event_handler(event.__name__, event)
+            return event
+
+        return wrapper(func)
 
     def remove_server_event(self, func=None):
         def wrapper(event):
@@ -103,8 +116,17 @@ if __name__ == '__main__':
 
 
     @api.server_event
+    async def ready(context: ConnectContext) -> None:
+        print('ready')
+
+
+    @api.server_event
     async def connect(context: ConnectContext) -> None:
         print("Connected on {0}:{1}".format(context.host, context.port))
+
+    @api.server_event
+    async def disconnect(context: ConnectContext) -> None:
+        print('disconnected')
 
 
     api.start()

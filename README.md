@@ -1,4 +1,4 @@
 # bedrockAPI
 
 
-An in-progress toolkit for editing bedrock addons.
+An in-progress API for bedrock

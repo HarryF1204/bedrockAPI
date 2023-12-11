@@ -8,6 +8,7 @@ from events import *
 
 import consts
 import utils
+import context
 import logging
 
 
@@ -33,8 +34,13 @@ class BedrockAPI:
 
         try:
             async for msg in self._ws:
+                #await self._gameEvent.trigger_event(data, data)
                 data = json.loads(msg)
-                await self._gameEvent.trigger_event(data["header"]["eventName"], data)
+                eventName = data["header"]["eventName"]
+                body = data["body"]
+
+                gameContext = context.getGameContext(eventName)(ConnectContext(self._host, self._port), body)
+                await self._gameEvent.trigger_event(eventName, gameContext)
         except websockets.exceptions.ConnectionClosed as e:
             self._dispatchServerEvent("disconnect")
             print(':: Client Disconnected', e)
@@ -126,7 +132,6 @@ class BedrockAPI:
 if __name__ == '__main__':
     api = BedrockAPI()
 
-
     @api.server_event
     async def ready(context: ConnectContext) -> None:
         print('ready')
@@ -142,6 +147,6 @@ if __name__ == '__main__':
 
     @api.game_event
     async def PlayerMessage(data) -> None:
-        print("Player Message: ", data)
+        print("Player Message:", data.message)
 
     api.start()

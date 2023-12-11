@@ -6,6 +6,8 @@ from uuid import uuid4
 
 from events import *
 
+import consts
+import utils
 import logging
 
 
@@ -17,7 +19,7 @@ class BedrockAPI:
         self._serverEvent = ServerEvent()
         self._gameEvent = GameEvent()
         self._ws: websockets.WebSocketServerProtocol
-        self._loop: asyncio.windows_events.ProactorEventLoop
+        self._loop = asyncio.get_event_loop()
 
     def __repr__(self):
         return f"Bedrock API running at {self._host}:{self._port}"
@@ -25,9 +27,14 @@ class BedrockAPI:
     async def _handleWS(self, ws: websockets.WebSocketServerProtocol) -> None:
         self._ws = ws
         self._dispatchServerEvent("connect")
+
+        for item in self._gameEvent.event_handlers.keys():
+            await self._subscribeEvent(item)
+
         try:
             async for msg in self._ws:
-                print(msg)
+                data = json.loads(msg)
+                await self._gameEvent.trigger_event(data["header"]["eventName"], data)
         except websockets.exceptions.ConnectionClosed as e:
             self._dispatchServerEvent("disconnect")
             print(':: Client Disconnected', e)
@@ -37,7 +44,6 @@ class BedrockAPI:
             "header": header,
             "body": body
         })
-
         return await self._ws.send(data)
 
     async def run_command(self, command):
@@ -58,13 +64,14 @@ class BedrockAPI:
         return await self._sendPayload(header, body)
 
     async def _subscribeEvent(self, event):
+        if event not in consts.game_events:
+            raise Exception(f"Event: {event} not found in event list")
+
         header = {
-            "header": {
-                "version": 1,
-                "requestId": str(uuid4()),
-                "messageType": "commandRequest",
-                "messagePurpose": "subscribe"
-            }
+            "version": 1,
+            "requestId": str(uuid4()),
+            "messageType": "commandRequest",
+            "messagePurpose": "subscribe"
         }
         body = {
             "eventName": event
@@ -72,12 +79,13 @@ class BedrockAPI:
         return await self._sendPayload(header, body)
 
     def start(self):
+        assert self._loop
+
         print('WebSocket Server - running at')
         print(f':: ws://localhost:{self._port}')
         print(f':: /connect ws://{self._host}:{self._port}')
 
         server = websockets.serve(self._handleWS, self._host, self._port)
-        self._loop = asyncio.get_event_loop()
         self._loop.run_until_complete(server)
         self._dispatchServerEvent("ready")
         try:
@@ -87,7 +95,6 @@ class BedrockAPI:
 
     def _dispatchServerEvent(self, event):
         assert self._loop
-        print(type(self._loop))
         connectContext = ConnectContext(self._host, self._port)
         self._loop.create_task(self._serverEvent.trigger_event(event, connectContext))
 
@@ -100,7 +107,11 @@ class BedrockAPI:
 
     def game_event(self, func=None):
         def wrapper(event):
-            self._gameEvent.add_event_handler(event.__name__, event)
+            event_name = utils.to_pascal_case(event.__name__)
+            if event_name not in consts.game_events:
+                raise Exception(f"{event_name} not found in events")
+
+            self._gameEvent.add_event_handler(event_name, event)
             return event
 
         return wrapper(func)
@@ -129,5 +140,8 @@ if __name__ == '__main__':
     async def disconnect(context: ConnectContext) -> None:
         print('disconnected')
 
+    @api.game_event
+    async def PlayerMessage(data) -> None:
+        print("Player Message: ", data)
 
     api.start()

@@ -12,12 +12,12 @@ import logging
 class BedrockAPI:
 
     def __init__(self, host='localhost', port=8000):
-        self._loop = None
         self._host = host
         self._port = port
-        self._ws: websockets.WebSocketServerProtocol
         self._serverEvent = ServerEvent()
         self._gameEvent = GameEvent()
+        self._ws: websockets.WebSocketServerProtocol
+        self._loop: asyncio.windows_events.ProactorEventLoop
 
     def __repr__(self):
         return f"Bedrock API running at {self._host}:{self._port}"
@@ -87,6 +87,7 @@ class BedrockAPI:
 
     def _dispatchServerEvent(self, event):
         assert self._loop
+        print(type(self._loop))
         connectContext = ConnectContext(self._host, self._port)
         self._loop.create_task(self._serverEvent.trigger_event(event, connectContext))
 

@@ -34,13 +34,13 @@ class BedrockAPI:
 
         try:
             async for msg in self._ws:
-                #await self._gameEvent.trigger_event(data, data)
                 data = json.loads(msg)
                 eventName = data["header"]["eventName"]
                 body = data["body"]
 
-                gameContext = context.getGameContext(eventName)(ConnectContext(self._host, self._port), body)
+                gameContext = context.getGameContext(eventName)(body)
                 await self._gameEvent.trigger_event(eventName, gameContext)
+
         except websockets.exceptions.ConnectionClosed as e:
             self._dispatchServerEvent("disconnect")
             print(':: Client Disconnected', e)

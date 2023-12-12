@@ -1,11 +1,6 @@
 class GameContext:
-    def __init__(self, server, data):
-        self._server = server
+    def __init__(self, data):
         self._data = data
-
-    @property
-    def server(self):
-        return self._server
 
     @property
     def data(self):
@@ -13,8 +8,8 @@ class GameContext:
 
 
 class PlayerMessageContext(GameContext):
-    def __init__(self, server, data):
-        super().__init__(server, data)
+    def __init__(self, data):
+        super().__init__(data)
 
     @property
     def message(self) -> str:
@@ -36,4 +31,4 @@ class PlayerMessageContext(GameContext):
 def getGameContext(name) -> type[GameContext]:
     return {
         "PlayerMessage": PlayerMessageContext
-    }[name]
+    }.get(name, GameContext)

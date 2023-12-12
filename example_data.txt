@@ -167,3 +167,97 @@ response:
     },
     "spawnType": 1
 }
+
+// Block Broken
+{
+    "body": {
+        "block": {
+            "aux": 5,
+            "id": "planks",
+            "namespace": "minecraft"
+        },
+        "count": 1,
+        "destructionMethod": 0,
+        "player": {
+            "color": "ff5454ff",
+            "dimension": 0,
+            "id": -4294967295,
+            "name": "YesItsKirby0",
+            "position": {
+                "x": 23.54280090332031,
+                "y": -56.37998962402344,
+                "z": -83.56442260742188
+            },
+            "type": "minecraft:player",
+            "variant": 0,
+            "yRot": 49.070068359375
+        },
+        "tool": {
+            "aux": 5,
+            "enchantments": [],
+            "freeStackSize": 0,
+            "id": "planks",
+            "maxStackSize": 64,
+            "namespace": "minecraft",
+            "stackSize": 64
+        },
+        "variant": 5
+    },
+    "header": {
+        "eventName": "BlockBroken",
+        "messagePurpose": "event",
+        "version": 17039360
+    }
+}
+
+{
+    "body": {
+        "block": {
+            "aux": 0,
+            "id": "grass",
+            "namespace": "minecraft"
+        },
+        "count": 1,
+        "destructionMethod": 0,
+        "player": {
+            "color": "ff5454ff",
+            "dimension": 0,
+            "id": -4294967295,
+            "name": "YesItsKirby0",
+            "position": {
+                "x": -6.214475631713867,
+                "y": -58.37998962402344,
+                "z": -26.43823623657227
+            },
+            "type": "minecraft:player",
+            "variant": 0,
+            "yRot": 130.92724609375
+        },
+        "tool": {
+            "aux": 0,
+            "enchantments": [
+                {
+                    "level": 1,
+                    "name": "Silk Touch I",
+                    "type": 16
+                },
+                {
+                    "level": 2,
+                    "name": "Efficiency II",
+                    "type": 15
+                }
+            ],
+            "freeStackSize": 0,
+            "id": "netherite_shovel",
+            "maxStackSize": 1,
+            "namespace": "minecraft",
+            "stackSize": 1
+        },
+        "variant": 0
+    },
+    "header": {
+        "eventName": "BlockBroken",
+        "messagePurpose": "event",
+        "version": 17039360
+    }
+}

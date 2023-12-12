@@ -158,15 +158,13 @@ if __name__ == '__main__':
 
     @api.game_event
     async def block_placed(ctx) -> None:
-        print(ctx.data)
+        pass
+
 
     @api.game_event
-    async def entity_spawned(ctx) -> None:
-        print(ctx.data)
+    async def block_broken(ctx) -> None:
+        print(f'{ctx.block.typeId}\n{ctx.destruction}\n{ctx.itemStack.typeId}\n{ctx.player.position}')
 
-    @api.game_event
-    async def item_used(ctx) -> None:
-        print(ctx.data)
 
 
     @api.server_event

@@ -69,15 +69,17 @@ class BedrockAPI:
         }
         return await self._sendPayload(header, body)
 
-    async def _subscribeEvent(self, event):
+    async def _subscribeEvent(self, event, unsubscribe=False):
         if event not in consts.game_events:
             raise Exception(f"Event: {event} not found in event list")
+
+        subscribeMode = "subscribe" if not unsubscribe else "unsubscribe"
 
         header = {
             "version": 1,
             "requestId": str(uuid4()),
             "messageType": "commandRequest",
-            "messagePurpose": "subscribe"
+            "messagePurpose": subscribeMode
         }
         body = {
             "eventName": event
@@ -122,11 +124,12 @@ class BedrockAPI:
 
         return wrapper(func)
 
-    def remove_server_event(self, func=None):
-        def wrapper(event):
-            self._serverEvent.remove_event_handler(event)
+    def remove_server_event(self, event):
+        self._serverEvent.remove_event_handler(event)
 
-        return wrapper(func)
+    def remove_game_event(self, event):
+        self._gameEvent.remove_event_handler(event)
+        self._loop.create_task(self._subscribeEvent(event, unsubscribe=True))
 
 
 if __name__ == '__main__':
@@ -148,5 +151,6 @@ if __name__ == '__main__':
     @api.game_event
     async def PlayerMessage(data) -> None:
         print("Player Message:", data.message)
+        api.remove_game_event("PlayerMessage")
 
     api.start()

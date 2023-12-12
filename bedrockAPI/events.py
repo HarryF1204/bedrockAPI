@@ -8,6 +8,9 @@ class EventManager:
     def add_event_handler(self, event, handler):
         self.event_handlers[event] = handler
 
+    def remove_event_handler(self, event):
+        self.event_handlers.pop(event)
+
     async def trigger_event(self, event_name, *args, **kwargs):
         if event_name in self.event_handlers:
             await self.event_handlers[event_name](*args, **kwargs)
@@ -21,9 +24,6 @@ class GameEvent(EventManager):
 class ServerEvent(EventManager):
     def __init__(self):
         super().__init__()
-
-    def remove_event_handler(self, event):
-        self.event_handlers.pop(event)
 
 
 class ConnectContext:

@@ -35,11 +35,21 @@ class BedrockAPI:
         try:
             async for msg in self._ws:
                 data = json.loads(msg)
-                eventName = data["header"]["eventName"]
+
+                header = data["header"]
                 body = data["body"]
 
-                gameContext = context.getGameContext(eventName)(body)
-                await self._gameEvent.trigger_event(eventName, gameContext)
+                if header["messagePurpose"] == "commandResponse":
+                    # implement request and response classes to allow this to be returned
+                    gameContext = context.CommandResponseContext(body)
+
+                elif header["messagePurpose"] == "event":
+                    eventName = header["eventName"]
+                    gameContext = context.getGameContext(eventName)(body)
+                    await self._gameEvent.trigger_event(eventName, gameContext)
+
+                else:
+                    print(data)
 
         except websockets.exceptions.ConnectionClosed as e:
             self._dispatchServerEvent("disconnect")
@@ -54,12 +64,10 @@ class BedrockAPI:
 
     async def run_command(self, command):
         header = {
-            "header": {
-                "version": 1,
-                "requestId": str(uuid4()),
-                "messageType": "commandRequest",
-                "messagePurpose": "commandRequest"
-            }
+            "version": 1,
+            "requestId": str(uuid4()),
+            "messageType": "commandRequest",
+            "messagePurpose": "commandRequest"
         }
         body = {
             "version": 1,
@@ -143,14 +151,11 @@ if __name__ == '__main__':
     @api.server_event
     async def connect(context: ConnectContext) -> None:
         print("Connected on {0}:{1}".format(context.host, context.port))
+        await api.run_command("say test")
 
     @api.server_event
     async def disconnect(context: ConnectContext) -> None:
         print('disconnected')
 
-    @api.game_event
-    async def PlayerMessage(data) -> None:
-        print("Player Message:", data.message)
-        api.remove_game_event("PlayerMessage")
 
     api.start()

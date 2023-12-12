@@ -28,6 +28,15 @@ class PlayerMessageContext(GameContext):
         return self._data["type"]
 
 
+class CommandResponseContext(GameContext):
+    def __init__(self, data):
+        super().__init__(data)
+
+    @property
+    def message(self) -> str:
+        return self._data["message"]
+
+
 def getGameContext(name) -> type[GameContext]:
     return {
         "PlayerMessage": PlayerMessageContext

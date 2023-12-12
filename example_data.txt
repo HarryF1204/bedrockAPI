@@ -12,5 +12,158 @@ response:
 
 
 
+// Block Placed
+{
+    "block": {
+        "aux": 5,
+        "id": "planks",
+        "namespace": "minecraft"
+    },
+    "count": 1,
+    "placedUnderWater": false,
+    "placementMethod": 0,
+    "player": {
+        "color": "ff5454ff",
+        "dimension": 0,
+        "id": -4294967295,
+        "name": "YesItsKirby0",
+        "position": {
+            "x": 25.60502815246582,
+            "y": -55.6068115234375,
+            "z": -77.88928985595703
+        },
+        "type": "minecraft:player",
+        "variant": 0,
+        "yRot": 150.9065246582031
+    },
+    "tool": {
+        "aux": 5,
+        "enchantments": [],
+        "freeStackSize": 0,
+        "id": "planks",
+        "maxStackSize": 64,
+        "namespace": "minecraft",
+        "stackSize": 64
+    }
+}
+
+// Item Used
+{
+    "count": 1,
+    "item": {
+        "aux": 0,
+        "id": "cooked_mutton",
+        "namespace": "minecraft"
+    },
+    "player": {
+        "color": "ff5454ff",
+        "dimension": 0,
+        "id": -4294967295,
+        "name": "YesItsKirby0",
+        "position": {
+            "x": 22.51210975646973,
+            "y": -56.37998962402344,
+            "z": -83.24063110351562
+        },
+        "type": "minecraft:player",
+        "variant": 0,
+        "yRot": -8.40478515625
+    },
+    "useMethod": 1
+}
+
+{
+    "count": 1,
+    "item": {
+        "aux": 0,
+        "id": "bow",
+        "namespace": "minecraft"
+    },
+    "player": {
+        "color": "ff5454ff",
+        "dimension": 0,
+        "id": -4294967295,
+        "name": "YesItsKirby0",
+        "position": {
+            "x": 23.54280090332031,
+            "y": -56.37998962402344,
+            "z": -83.50907135009766
+        },
+        "type": "minecraft:player",
+        "variant": 0,
+        "yRot": -16.99429321289062
+    },
+    "useMethod": 5
+}
+
+{
+    "count": 1,
+    "item": {
+        "aux": 0,
+        "id": "arrow",
+        "namespace": "minecraft"
+    },
+    "player": {
+        "color": "ff5454ff",
+        "dimension": 0,
+        "id": -4294967295,
+        "name": "YesItsKirby0",
+        "position": {
+            "x": 23.54280090332031,
+            "y": -56.37998962402344,
+            "z": -83.50907135009766
+        },
+        "type": "minecraft:player",
+        "variant": 0,
+        "yRot": -16.99429321289062
+    },
+    "useMethod": 5
+}
+
+{
+    "count": 1,
+    "item": {
+        "aux": 0,
+        "id": "chicken_spawn_egg",
+        "namespace": "minecraft"
+    },
+    "player": {
+        "color": "ff5454ff",
+        "dimension": 0,
+        "id": -4294967295,
+        "name": "YesItsKirby0",
+        "position": {
+            "x": 23.54280090332031,
+            "y": -56.37998962402344,
+            "z": -83.50907135009766
+        },
+        "type": "minecraft:player",
+        "variant": 0,
+        "yRot": 1.427093505859375
+    },
+    "useMethod": 6
+}
 
 
+
+// Spawned
+{
+    "mob": {
+        "type": 10
+    },
+    "player": {
+        "color": "ff5454ff",
+        "dimension": 0,
+        "id": -4294967295,
+        "name": "YesItsKirby0",
+        "position": {
+            "x": 23.54280090332031,
+            "y": -56.37998962402344,
+            "z": -83.50907135009766
+        },
+        "type": "minecraft:player",
+        "variant": 0,
+        "yRot": 1.427093505859375
+    },
+    "spawnType": 1
+}

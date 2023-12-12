@@ -152,17 +152,25 @@ class BedrockAPI:
         self._loop.create_task(self._subscribeEvent(event, unsubscribe=True))
 
 
-
 if __name__ == '__main__':
     api = BedrockAPI()
 
+
     @api.game_event
-    async def block_placed(context) -> None:
-        commandResponse = await api.run_command('say test')
-        print(commandResponse.message)
+    async def block_placed(ctx) -> None:
+        print(ctx.data)
+
+    @api.game_event
+    async def entity_spawned(ctx) -> None:
+        print(ctx.data)
+
+    @api.game_event
+    async def item_used(ctx) -> None:
+        print(ctx.data)
+
 
     @api.server_event
-    async def connect(context) -> None:
+    async def connect(ctx) -> None:
         pass
 
 

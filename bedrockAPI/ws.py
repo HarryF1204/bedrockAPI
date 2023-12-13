@@ -14,6 +14,11 @@ import logging
 
 class BedrockAPI:
 
+    """
+    Bedrock API for bridging the gap between python and Minecraft Bedrock Edition
+    Working as of 1.20.40
+    """
+
     def __init__(self, host='localhost', port=8000):
         self._host = host
         self._port = port

@@ -4,15 +4,38 @@ import math
 
 
 class GameContext:
-    def __init__(self, data):
+    """
+    The default class for game context, stores the body of the data returned by the client
+    when a subscribed event occurs.
+
+    Attributes:
+        _data: private variable holding the json data returned from the event
+
+    Methods:
+        data: returns _data as a python object
+
+    Params:
+        data: body from the returned subscribe event
+    """
+    def __init__(self, data: dict):
         self._data = data
 
     @property
-    def data(self):
+    def data(self) -> dict:
         return self._data
 
 
 class CommandResponseContext:
+    """
+    Class for storing the data returned from running a command with run_command (ws.py).
+
+    Attributes:
+        _data: the full body section of the returned data
+
+    Methods:
+        message: returns the data returned from executing the command
+        status: returns the status code
+    """
     def __init__(self, data):
         self._data = data
 
@@ -21,23 +44,27 @@ class CommandResponseContext:
         return self._data["message"]
 
     @property
-    def status(self) -> str:
+    def status(self) -> str:  # to do: raise error on failed command
         return self._data["statusCode"]
 
 
 class CommandRequestContext:
+    """
+    Class for storing the request data to be compared to responses
+    """
     def __init__(self, identifier, command):
         self._command = command
         self._id: UUID = identifier
         self._response = asyncio.Future[CommandResponseContext]
 
     @property
-    def identifier(self):
+    def command(self):
         return self._command
 
     @property
     def id(self):
         return self._id
+
 
 
 class Location:

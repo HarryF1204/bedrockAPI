@@ -50,7 +50,16 @@ class CommandResponseContext:
 
 class CommandRequestContext:
     """
-    Class for storing the request data to be compared to responses
+    Class for storing the request data to be compared to responses in _wsHandler (ws.py)
+
+    Attributes:
+        _command: The command sent to the client
+        _id: the UUID to be compared to CommandResponses
+        _response: The CommandResponseContext object to be obtained later
+
+    Methods:
+        command: returns the command
+        id: returns the id
     """
     def __init__(self, identifier, command):
         self._command = command
@@ -68,6 +77,24 @@ class CommandRequestContext:
 
 
 class Location:
+    """
+    A class representing a location in 3D space
+
+    Params:
+        x, y, z: coordinates
+
+    Attributes:
+        x, y, z: coordinates
+
+    Methods:
+        x, y, z: returns coordinates
+
+        distance_to:
+            @params
+                Location1: Location, Location2: Location
+            returns the distance between two locations
+
+    """
     def __init__(self, x, y, z):
         self._x = x
         self._y = y
@@ -112,6 +139,19 @@ class Location:
 
 
 class Enchantment:
+    """
+    A class representing game enchantments to be used by context
+
+    Attributes:
+        name: The name of the enchant as it appears in game
+        type: The int value representing a specific enchantment
+        level: The level of the enchant
+
+    Methods:
+        name: returns name
+        type: returns type
+        level: returns level
+    """
     def __init__(self, data):
         self._name = data["name"]
         self._type = data["type"]
@@ -131,6 +171,24 @@ class Enchantment:
 
 
 class ItemStack:
+    """
+    A class representing in game items
+
+    Attributes:
+        aux: the aux identifier of the item -- the item variant
+        enchantments: the enchantments on the item returned as an array of Enchantment instances
+        typeId: the identifier in the form of namespace:item_name
+        stackSize: the amount of the item
+        maxStackSize: the max amount of items that this item can have
+
+    Methods:
+        aux: returns aux value
+        enchantments: returns enchantments list
+        typeId: returns the identifier
+        stackSize: returns the stack size
+        maxStackSize: returns the maxStackSize
+
+    """
     def __init__(self, data):
         self._aux = data["aux"]
         self._enchantments = [Enchantment(enchantment) for enchantment in data["enchantments"]]
@@ -160,6 +218,17 @@ class ItemStack:
 
 
 class Block:
+    """
+    A class representing in game blocks
+
+    Attributes:
+        aux: the variant of the block type
+        typeId: the block type
+
+    Methods:
+        aux: returns the aux value
+        typeId: returns the block name in the form of namespace:identifier
+    """
     def __init__(self, data):
         self._aux = data["aux"]
         self._typeId = f'{data["namespace"]}:{data["id"]}'
@@ -174,6 +243,21 @@ class Block:
 
 
 class Player:
+    """
+    A class representing player entities
+
+    Attributes:
+        dimension -> int: returns the dimension of the player as an integer, e.g., overworld would be 0
+        id -> int: the entity identifier
+        name -> str: the name tag of the player
+        position -> Location: returns the location of the player
+
+    Methods:
+        dimension: returns the current dimension of the entity
+        id: returns the id
+        name: returns the nametag
+        position: returns the location of the player as a Location
+    """
     def __init__(self, data):
         self._dimension = data["dimension"]
         self._id = data["id"]
@@ -196,8 +280,21 @@ class Player:
     def position(self):
         return self._position
 
+    # to do: set dimension, set position, kill, give item, etc
+
 
 class PlayerMessageContext(GameContext):
+    """
+    A class representing the Game Context for Player Messages sent in game.
+    This class inherits from Game Context
+
+    Methods:
+        message -> str: returns the message that was sent
+        sender -> str: returns the sender of the message
+        receiver -> str: returns the receiver of the message
+        msg_type -> str: returns the type of the message, e.g., tell
+
+    """
     def __init__(self, data):
         super().__init__(data)
 
@@ -219,6 +316,22 @@ class PlayerMessageContext(GameContext):
 
 
 class BlockBrokenContext(GameContext):
+    """
+    A class representing the Game Context for the Block Broken game event.
+    This class inherits from Game Context
+
+    Attributes:
+        _block: the block that was broken stored as an instance of the Block class
+        _destruction: the destruction method
+        _itemStack: the item used to break the block
+        _player: the player entity that broke the block as a Player instance
+
+    Methods:
+        block: returns the block
+        destruction: returns the destruction method as an integer
+        itemStack: returns the item
+        player: returns the player
+    """
     def __init__(self, data):
         super().__init__(data)
 

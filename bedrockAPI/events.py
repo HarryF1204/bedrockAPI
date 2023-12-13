@@ -26,7 +26,7 @@ class ServerEvent(EventManager):
         super().__init__()
 
 
-class ConnectContext:
+class ConnectContext:  # to do: encapsulate host and port, using getters
     def __init__(self, host, port):
         self.host = host
         self.port = port

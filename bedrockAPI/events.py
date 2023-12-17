@@ -16,7 +16,7 @@ class EventManager:
             await self.event_handlers[event_name](*args, **kwargs)
 
 
-class GameEvent(EventManager):
+class GameEvent(EventManager): 
     def __init__(self):
         super().__init__()
 

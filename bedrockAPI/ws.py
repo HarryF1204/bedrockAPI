@@ -4,16 +4,15 @@ import asyncio
 
 from uuid import uuid4
 
-from events import *
+from bedrockAPI.events import *
 
-import consts
-import utils
-import context
+import bedrockAPI.consts as consts
+import bedrockAPI.utils as utils
+import bedrockAPI.context as context
 import logging
 
 
 class BedrockAPI:
-
     """
     Bedrock API for bridging the gap between python and Minecraft Bedrock Edition
     Working as of 1.20.40
@@ -25,8 +24,13 @@ class BedrockAPI:
         self._serverEvent = ServerEvent()
         self._gameEvent = GameEvent()
         self._ws: websockets.WebSocketServerProtocol
-        self._loop = asyncio.get_event_loop()
+        self._loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()
         self._commandResponseFutures: Dict = {}
+        self._server = None
+
+    @property
+    def loop(self):
+        return self._loop
 
     def __repr__(self):
         return f"Bedrock API running at {self._host}:{self._port}"
@@ -63,6 +67,8 @@ class BedrockAPI:
         except websockets.exceptions.ConnectionClosed as e:
             self._dispatchServerEvent("disconnect")
             print(':: Client Disconnected', e)
+        except asyncio.CancelledError as e:
+            pass
 
     async def _sendPayload(self, header, body):
         data = json.dumps({
@@ -118,8 +124,8 @@ class BedrockAPI:
         print(f':: ws://localhost:{self._port}')
         print(f':: /connect ws://{self._host}:{self._port}')
 
-        server = websockets.serve(self._handleWS, self._host, self._port)
-        self._loop.run_until_complete(server)
+        self._server = websockets.serve(self._handleWS, self._host, self._port)
+        self._loop.run_until_complete(self._server)
         self._dispatchServerEvent("ready")
         try:
             self._loop.run_forever()
@@ -157,6 +163,23 @@ class BedrockAPI:
         self._loop.create_task(self._subscribeEvent(event, unsubscribe=True))
 
 
+    def stop(self):
+        self._server.ws_server.close()
+        self._loop.stop()
+        while not self._loop.is_closed():
+            try:
+                async def shutdown():
+                    await self._loop.shutdown_asyncgens()
+                    self._loop.stop()
+
+                asyncio.ensure_future(shutdown(), loop=self._loop)
+                self._loop.run_forever()
+
+                self._loop.close()
+            except (RuntimeError, Exception) as e:
+                pass
+
+
 if __name__ == '__main__':
     api = BedrockAPI()
 
@@ -168,8 +191,7 @@ if __name__ == '__main__':
 
     @api.game_event
     async def block_broken(ctx) -> None:
-        print(f'{ctx.block.typeId}\n{ctx.destruction}\n{ctx.itemStack.typeId}\n{ctx.player.position}')
-
+        print(f'{ctx.block.typeId}\n{ctx.itemStack.typeId}\n{ctx.player.position}')
 
 
     @api.server_event

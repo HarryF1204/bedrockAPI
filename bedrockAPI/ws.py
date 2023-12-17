@@ -162,7 +162,6 @@ class BedrockAPI:
         self._gameEvent.remove_event_handler(event)
         self._loop.create_task(self._subscribeEvent(event, unsubscribe=True))
 
-
     def stop(self):
         self._server.ws_server.close()
         self._loop.stop()

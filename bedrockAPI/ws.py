@@ -1,6 +1,9 @@
 import websockets
 import json
 import asyncio
+import sys
+import os
+import signal
 
 from uuid import uuid4
 
@@ -15,9 +18,7 @@ import logging
 class BedrockAPI:
     """
     Bedrock API for bridging the gap between python and Minecraft Bedrock Edition
-    Working as of 1.20.40
     """
-
     def __init__(self, host='localhost', port=8000):
         self._host = host
         self._port = port
@@ -25,7 +26,7 @@ class BedrockAPI:
         self._gameEvent = GameEvent()
         self._ws: websockets.WebSocketServerProtocol
         self._loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()
-        self._commandResponseFutures: Dict = {}
+        self._commandResponseFutures: Dict[str, asyncio.Future] = {}
         self._server = None
 
     @property
@@ -34,13 +35,10 @@ class BedrockAPI:
 
     def __repr__(self):
         return f"Bedrock API running at {self._host}:{self._port}"
-
+ 
     async def _handleWS(self, ws: websockets.WebSocketServerProtocol) -> None:
         self._ws = ws
         self._dispatchServerEvent("connect")
-
-        for item in self._gameEvent.event_handlers.keys():
-            await self._subscribeEvent(item)
 
         try:
             async for msg in self._ws:
@@ -63,12 +61,15 @@ class BedrockAPI:
 
                 else:
                     print(data)
-
         except websockets.exceptions.ConnectionClosed as e:
             self._dispatchServerEvent("disconnect")
             print(':: Client Disconnected', e)
-        except asyncio.CancelledError as e:
-            pass
+        except asyncio.CancelledError:
+            raise
+        finally:
+            if not ws.closed:
+                await ws.close()
+
 
     async def _sendPayload(self, header, body):
         data = json.dumps({
@@ -116,21 +117,22 @@ class BedrockAPI:
             "eventName": event
         }
         return await self._sendPayload(header, body)
-
+            
     def start(self):
-        assert self._loop
+        async def main():
+            print('WebSocket Server - running at')
+            print(f':: ws://localhost:{self._port}')
+            print(f':: /connect ws://{self._host}:{self._port}')
+            
+            self._server = await websockets.serve(self._handleWS, self._host, self._port)
+            self._dispatchServerEvent("ready")
+            await self._server.wait_closed()
 
-        print('WebSocket Server - running at')
-        print(f':: ws://localhost:{self._port}')
-        print(f':: /connect ws://{self._host}:{self._port}')
-
-        self._server = websockets.serve(self._handleWS, self._host, self._port)
-        self._loop.run_until_complete(self._server)
-        self._dispatchServerEvent("ready")
-        try:
+        if not self._loop.is_running():
+            self._server_task = self._loop.create_task(main())
             self._loop.run_forever()
-        except KeyboardInterrupt:
-            print(':: Server Closed from Keyboard Interrupt')
+        else:
+            asyncio.ensure_future(main(), loop=self._loop)
 
     def _dispatchServerEvent(self, event):
         assert self._loop
@@ -144,6 +146,7 @@ class BedrockAPI:
 
         return decorator(func)
 
+    # @todo: allow specifying the event name in the decorator
     def game_event(self, func=None):
         def wrapper(event):
             event_name = utils.to_pascal_case(event.__name__)
@@ -162,21 +165,32 @@ class BedrockAPI:
         self._gameEvent.remove_event_handler(event)
         self._loop.create_task(self._subscribeEvent(event, unsubscribe=True))
 
+
     def stop(self):
-        self._server.ws_server.close()
-        self._loop.stop()
-        while not self._loop.is_closed():
-            try:
-                async def shutdown():
-                    await self._loop.shutdown_asyncgens()
-                    self._loop.stop()
+        async def shutdown():
+            if self._server is not None:
+                # Forcibly close all active WebSocket connections
+                for ws in self._server.websockets.copy():
+                    ws.transport.close()  # Immediately close the transport (socket)
+                
+                # Now close the server itself
+                self._server.close()
+                await self._server.wait_closed()
 
-                asyncio.ensure_future(shutdown(), loop=self._loop)
-                self._loop.run_forever()
+            await self._loop.shutdown_asyncgens()
 
-                self._loop.close()
-            except (RuntimeError, Exception) as e:
-                pass
+        if self._loop.is_running():
+            # Schedule the shutdown task and forcibly stop the loop
+            asyncio.ensure_future(shutdown(), loop=self._loop)
+
+            print('Terminating the event loop')
+            os.kill(os.getpid(), signal.SIGTERM)  # Terminate the process immediately
+
+        else:
+            # If the loop is not running, just run the shutdown coroutine directly
+            asyncio.run(shutdown())
+
+
 
 
 if __name__ == '__main__':

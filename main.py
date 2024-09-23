@@ -37,6 +37,7 @@ class App:
     def stop_server_in_thread(self):
         self.api.stop()
         self.root.destroy()
+        
 
 
 if __name__ == '__main__':

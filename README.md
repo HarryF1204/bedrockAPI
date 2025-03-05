@@ -1,4 +1,4 @@
 # bedrockAPI
 
 
-An in-progress API for bedrock
+Test websocket project
